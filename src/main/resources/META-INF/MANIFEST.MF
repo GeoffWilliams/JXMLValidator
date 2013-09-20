@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Built-By: geoff
+Build-Jdk: 1.6.0_37
+Main-Class: uk.me.geoffwilliams.jxmlvalidator.App
+
