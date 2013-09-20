@@ -32,7 +32,8 @@ public class App
     {
         Validator validator = new Validator();
         if (args.length == 1) {
-            validator.validate(args[0]);
+            int status = validator.validate(args[0]);
+            System.exit(status);
         } else {
             logger.error("Must supply filename to validate");
         }

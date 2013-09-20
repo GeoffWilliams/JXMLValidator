@@ -36,8 +36,10 @@ public class Validator {
     public static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     
-    public void validate(String uri) {
+    public int validate(String uri) {
+        int status;
         try {
             String filename;
 
@@ -49,17 +51,21 @@ public class Validator {
                 logger.debug("processing local file...");
                 filename = uri;
             }
-            process(filename);
+            status = process(filename);
         } catch (ParserConfigurationException ex) {
+            status = ValidationErrorHandler.STATUS_EXCEPTION;
             logger.error("Parser Configuration error: {}", ex.getMessage());
         } catch (SAXException ex) {
+            status = ValidationErrorHandler.STATUS_EXCEPTION;
             logger.error("SAX error: {}", ex.getMessage());
         } catch (IOException ex) {
+            status = ValidationErrorHandler.STATUS_EXCEPTION;
             logger.error("IO error: {}", ex.getMessage());
         }
+        return status;
     }
     
-    private void process(String filename) throws ParserConfigurationException, SAXException, IOException {
+    private int process(String filename) throws ParserConfigurationException, SAXException, IOException {
         logger.info("Starting validating on: {}", filename);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
@@ -82,6 +88,7 @@ public class Validator {
             reportToLogger("Errors", errorHandler.getError());
             reportToLogger("Fatals", errorHandler.getFatal());
         }
+        return errorHandler.exitStatus();
     }
     
     private void reportToLogger(String classifier, List<String> messages) {

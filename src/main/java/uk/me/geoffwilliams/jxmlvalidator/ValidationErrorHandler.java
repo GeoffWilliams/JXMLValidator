@@ -29,6 +29,12 @@ import org.xml.sax.SAXParseException;
  * @author Geoff Williams
  */
 public class ValidationErrorHandler implements ErrorHandler {
+    public static final int STATUS_UNKNOWN = -1;
+    public static final int STATUS_OK = 0;
+    public static final int STATUS_WARNINGS = 1;
+    public static final int STATUS_ERRORS = 2;
+    public static final int STATUS_FATAL = 3;
+    public static final int STATUS_EXCEPTION = 255;
      
     private List<String> fatal = new ArrayList<String>();
     private List<String> error = new ArrayList<String>();
@@ -74,6 +80,25 @@ public class ValidationErrorHandler implements ErrorHandler {
         return fatal.size() + error.size() + warning.size() == 0;
     }
     
+    /**
+     * Get exit status code...
+     * @return 
+     */
+    public int exitStatus() {
+        int status;
+        if (isValid()) {
+            status = STATUS_OK;
+        } else if (warning.size() > 0) {
+            status = STATUS_WARNINGS;
+        } else if (error.size() > 0) {
+            status = STATUS_WARNINGS;
+        } else if (fatal.size() > 0) {
+            status = STATUS_FATAL;
+        } else {
+            status = STATUS_UNKNOWN;
+        }
+        return status;
+    }
     
 }
 
