@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 /**
- * Hello world!
+ * Main entry point for program, parsing command line arguments, etc
  *
  */
 public class App 

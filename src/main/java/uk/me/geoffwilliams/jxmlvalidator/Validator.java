@@ -29,8 +29,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- *
- * @author geoff
+ * Perform the validation
+ * @author Geoff Williams
  */
 public class Validator {
     public static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";

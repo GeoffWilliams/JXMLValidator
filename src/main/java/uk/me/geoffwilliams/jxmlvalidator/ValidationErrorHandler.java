@@ -25,8 +25,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- *
- * @author geoff
+ * Keeps track of validation errors detected
+ * @author Geoff Williams
  */
 public class ValidationErrorHandler implements ErrorHandler {
      
