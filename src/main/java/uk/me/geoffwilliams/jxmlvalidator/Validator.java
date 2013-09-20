@@ -37,32 +37,19 @@ public class Validator {
     public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     
-    public void validate(String filename) {
+    public void validate(String uri) {
         try {
-            logger.info("Validating: {}", filename);
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            
-            
-            // validation and namespaces ON
-            dbf.setNamespaceAware(true);
-            dbf.setValidating(true);
-            dbf.setAttribute(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
-            
-            
-            DocumentBuilder db = dbf.newDocumentBuilder(); 
-            ValidationErrorHandler errorHandler = new ValidationErrorHandler();
-            db.setErrorHandler(errorHandler);
-            Document doc = db.parse(new File(filename));
-            
-            if (errorHandler.isValid()) {
-                logger.info("***** File {} is VALID XML! :-D *****", filename);
+            String filename;
+
+            if (uri.contains("://")) {
+                // file is a URL - download to temporary file...
+                FileDownloader fileDownloader = new FileDownloader();
+                filename = fileDownloader.downloadFile(uri);   
             } else {
-                logger.error("**** File {} is INVALID XML :`( *****", filename);
-                logger.info("Error report:");
-                reportToLogger("Warnings", errorHandler.getWarning());
-                reportToLogger("Errors", errorHandler.getError());
-                reportToLogger("Fatals", errorHandler.getFatal());
+                logger.debug("processing local file...");
+                filename = uri;
             }
+            process(filename);
         } catch (ParserConfigurationException ex) {
             logger.error("Parser Configuration error: {}", ex.getMessage());
         } catch (SAXException ex) {
@@ -70,8 +57,31 @@ public class Validator {
         } catch (IOException ex) {
             logger.error("IO error: {}", ex.getMessage());
         }
-        
-        
+    }
+    
+    private void process(String filename) throws ParserConfigurationException, SAXException, IOException {
+        logger.info("Starting validating on: {}", filename);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        // validation and namespaces ON
+        dbf.setNamespaceAware(true);
+        dbf.setValidating(true);
+        dbf.setAttribute(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
+
+        DocumentBuilder db = dbf.newDocumentBuilder(); 
+        ValidationErrorHandler errorHandler = new ValidationErrorHandler();
+        db.setErrorHandler(errorHandler);
+        Document doc = db.parse(new File(filename));
+
+        if (errorHandler.isValid()) {
+            logger.info("***** File {} is VALID XML! :-D *****", filename);
+        } else {
+            logger.error("**** File {} is INVALID XML :`( *****", filename);
+            logger.info("Error report:");
+            reportToLogger("Warnings", errorHandler.getWarning());
+            reportToLogger("Errors", errorHandler.getError());
+            reportToLogger("Fatals", errorHandler.getFatal());
+        }
     }
     
     private void reportToLogger(String classifier, List<String> messages) {
