@@ -35,6 +35,7 @@ import org.xml.sax.SAXException;
 public class Validator {
     public static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+    private ErrorReport errorReport;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     
@@ -53,13 +54,13 @@ public class Validator {
             }
             status = process(filename);
         } catch (ParserConfigurationException ex) {
-            status = ValidationErrorHandler.STATUS_EXCEPTION;
+            status = App.STATUS_EXCEPTION;
             logger.error("Parser Configuration error: {}", ex.getMessage());
         } catch (SAXException ex) {
-            status = ValidationErrorHandler.STATUS_EXCEPTION;
+            status = App.STATUS_EXCEPTION;
             logger.error("SAX error: {}", ex.getMessage());
         } catch (IOException ex) {
-            status = ValidationErrorHandler.STATUS_EXCEPTION;
+            status = App.STATUS_EXCEPTION;
             logger.error("IO error: {}", ex.getMessage());
         }
         return status;
@@ -75,27 +76,23 @@ public class Validator {
         dbf.setAttribute(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
 
         DocumentBuilder db = dbf.newDocumentBuilder(); 
-        ValidationErrorHandler errorHandler = new ValidationErrorHandler();
-        db.setErrorHandler(errorHandler);
+        errorReport = new ErrorReport();
+        db.setErrorHandler(errorReport);
         Document doc = db.parse(new File(filename));
 
-        if (errorHandler.isValid()) {
+        if (errorReport.isValid()) {
             logger.info("***** File {} is VALID XML! :-D *****", filename);
         } else {
             logger.error("**** File {} is INVALID XML :`( *****", filename);
-            logger.info("Error report:");
-            reportToLogger("Warnings", errorHandler.getWarning());
-            reportToLogger("Errors", errorHandler.getError());
-            reportToLogger("Fatals", errorHandler.getFatal());
+            logger.info("Error report:\n" + errorReport.toString());
         }
-        return errorHandler.exitStatus();
+        return errorReport.exitStatus();
     }
     
-    private void reportToLogger(String classifier, List<String> messages) {
-        logger.info(classifier + ":");
-        for (String message: messages) {
-            logger.info(message);
-        }
+
+    
+    public ErrorReport getValidationErrorHandler() {
+        return errorReport;
     }
 
 }

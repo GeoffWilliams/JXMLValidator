@@ -28,13 +28,8 @@ import org.xml.sax.SAXParseException;
  * Keeps track of validation errors detected
  * @author Geoff Williams
  */
-public class ValidationErrorHandler implements ErrorHandler {
-    public static final int STATUS_UNKNOWN = -1;
-    public static final int STATUS_OK = 0;
-    public static final int STATUS_WARNINGS = 1;
-    public static final int STATUS_ERRORS = 2;
-    public static final int STATUS_FATAL = 3;
-    public static final int STATUS_EXCEPTION = 255;
+public class ErrorReport implements ErrorHandler {
+
      
     private List<String> fatal = new ArrayList<String>();
     private List<String> error = new ArrayList<String>();
@@ -87,17 +82,35 @@ public class ValidationErrorHandler implements ErrorHandler {
     public int exitStatus() {
         int status;
         if (isValid()) {
-            status = STATUS_OK;
+            status = App.STATUS_OK;
         } else if (warning.size() > 0) {
-            status = STATUS_WARNINGS;
+            status = App.STATUS_WARNINGS;
         } else if (error.size() > 0) {
-            status = STATUS_WARNINGS;
+            status = App.STATUS_WARNINGS;
         } else if (fatal.size() > 0) {
-            status = STATUS_FATAL;
+            status = App.STATUS_FATAL;
         } else {
-            status = STATUS_UNKNOWN;
+            status = App.STATUS_UNKNOWN;
         }
         return status;
+    }
+    
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        formatResult(sb, "Fatal", fatal);
+        formatResult(sb, "Error", error);
+        formatResult(sb, "Warning", warning);
+        return sb.toString();
+    }
+    
+    private void formatResult(StringBuilder sb, String classifier, List<String> messages) {
+        sb.append(classifier);
+        sb.append(":\n");
+        for (String message: messages) {
+            sb.append(message);
+            sb.append("\n");
+        }
+        sb.append("\n");
     }
     
 }
