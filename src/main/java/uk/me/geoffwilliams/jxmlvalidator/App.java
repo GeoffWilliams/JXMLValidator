@@ -48,7 +48,7 @@ public class App {
     private static Logger logger = LoggerFactory.getLogger(App.class);
     private static final String CMD_OPTION_QUIET = "quiet";
     private static final String CMD_OPTION_VERBOSE = "verbose";
-    private static final String CMD_OPTION_GUI = "gui";
+    private static final String CMD_OPTION_CONSOLE = "console";
 
     
     public Options createOptions() {
@@ -61,8 +61,8 @@ public class App {
         // -verbose
         options.addOption(CMD_OPTION_VERBOSE, false, "enable debug output");
         
-        // -gui
-        options.addOption(CMD_OPTION_GUI, false, "enable GUI mode");
+        // -nogui
+        options.addOption(CMD_OPTION_CONSOLE, false, "disable the GUI and only run on the console");
    
         return options;
     }
@@ -98,17 +98,19 @@ public class App {
             }
 
             
-            if (cmd.hasOption(CMD_OPTION_GUI)) {
-                // exit status not relevant for GUI operation
+            if (cmd.hasOption(CMD_OPTION_CONSOLE)) {
+                // only run on the console.  Ensure we have been given a filename 
+                // or url
+                if (uri == null) {
+                    logger.error("You must specify a filename or URL when using console mode");
+                    status = STATUS_EXCEPTION;
+                } else {
+                    status = commandMode(uri);
+                }
+            } else {
+                // load the GUI by default
                 status = STATUS_GUI_MODE;
                 guiMode(uri);
-            } else if (parameters.size() == 1) { 
-                status = commandMode(uri);
-            } else {
-                // usage error
-                status = STATUS_EXCEPTION;
-                logger.error("You must specify a file or URL if not using the GUI");
-                usage(options);
             }
         } catch (ParseException ex) {
             status = STATUS_EXCEPTION;
