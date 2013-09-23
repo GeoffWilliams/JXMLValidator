@@ -37,6 +37,7 @@ public class Validator {
     public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
     private ErrorReport errorReport;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private String exceptionMessage;
 
     
     public int validate(String uri) {
@@ -55,13 +56,16 @@ public class Validator {
             status = process(filename);
         } catch (ParserConfigurationException ex) {
             status = App.STATUS_EXCEPTION;
-            logger.error("Parser Configuration error: {}", ex.getMessage());
+            exceptionMessage = "Parser Configuration error: " + ex.getMessage();
+            logger.error(exceptionMessage);
         } catch (SAXException ex) {
             status = App.STATUS_EXCEPTION;
-            logger.error("SAX error: {}", ex.getMessage());
+            exceptionMessage = "SAX error: " + ex.getMessage();
+            logger.error(exceptionMessage);
         } catch (IOException ex) {
             status = App.STATUS_EXCEPTION;
-            logger.error("IO error: {}", ex.getMessage());
+            exceptionMessage = "IO error: " + ex.getMessage();
+            logger.error(exceptionMessage);
         }
         return status;
     }
@@ -88,11 +92,14 @@ public class Validator {
         }
         return errorReport.exitStatus();
     }
-    
-
-    
+        
     public ErrorReport getValidationErrorHandler() {
         return errorReport;
     }
 
+    public String getExceptionMessage() {
+        return exceptionMessage;
+    }
+
+    
 }

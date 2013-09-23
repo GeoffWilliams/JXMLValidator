@@ -66,6 +66,8 @@ public class ValidatorUI extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         historyList = new javax.swing.JList();
+        jSeparator1 = new javax.swing.JSeparator();
+        statusLabel = new javax.swing.JLabel();
 
         validateButton.setText("Validate");
         validateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -127,15 +129,19 @@ public class ValidatorUI extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator1)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(9, 9, 9)
                         .addComponent(validateButton)
-                        .addGap(26, 26, 26)
+                        .addGap(35, 35, 35)
                         .addComponent(clearResultsButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 135, Short.MAX_VALUE)
                         .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2)
                     .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(inputUriBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
@@ -143,10 +149,7 @@ public class ValidatorUI extends javax.swing.JPanel {
                             .addComponent(clearHistoryButton)
                             .addComponent(jLabel1))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(inputUriBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)))
+                    .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -173,7 +176,10 @@ public class ValidatorUI extends javax.swing.JPanel {
                         .addComponent(validateButton)
                         .addComponent(clearResultsButton))
                     .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(statusLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -192,6 +198,7 @@ public class ValidatorUI extends javax.swing.JPanel {
     private void clearResultsBox() {
         resultBox.setBackground(Color.WHITE);
         resultBox.setText("");
+        statusLabel.setText("");
     }
 
     private void updateHistory() {
@@ -207,9 +214,11 @@ public class ValidatorUI extends javax.swing.JPanel {
         if (errorReport.isValid()) {
             resultBox.setBackground(Color.GREEN);
             resultBox.setText("***** VALID XML :D ***");
+            statusLabel.setText("valid XML!");
         } else {
             resultBox.setBackground(Color.ORANGE);
             resultBox.setText("***** INVALID XML DETECTED! :`( *****\n\n\n" + errorReport.toString());
+            statusLabel.setText("invalid XML");
         }
     }
 
@@ -220,21 +229,24 @@ public class ValidatorUI extends javax.swing.JPanel {
         if (uri.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter a file or URL to validate or pick one from your history");
         } else {
+            statusLabel.setText("validating...");
             progressBar.setIndeterminate(true);
             SwingWorker swingWorker = new SwingWorker() {
                 @Override
                 protected Object doInBackground() throws Exception {
 
                     Validator validator = new Validator();
-                    if (validator.validate(uri) != App.STATUS_EXCEPTION) {
+                    if (validator.validate(uri) == App.STATUS_EXCEPTION) {
+                        statusLabel.setText(validator.getExceptionMessage());
+                    } else {
                         // validation didn't thow exception, save to history
                         history.save(uri);
                         updateHistory();
-                    }
 
-                    // display the result of validation...
-                    ErrorReport errorReport = validator.getValidationErrorHandler();
-                    displayValidationResult(errorReport);
+                        // display the result of validation...
+                        ErrorReport errorReport = validator.getValidationErrorHandler();
+                        displayValidationResult(errorReport);
+                    }
                     progressBar.setIndeterminate(false);
                     return null;
                 }
@@ -261,13 +273,12 @@ public class ValidatorUI extends javax.swing.JPanel {
     private void historyListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_historyListMouseClicked
         if (historyList.getModel().getSize() > 0) {
             int index = historyList.locationToIndex(evt.getPoint());
-            
+
             String selection = (String) historyList.getModel().getElementAt(index);
             logger.debug("selected item from history: {}", selection);
             inputUriBox.setText(selection);
         }
     }//GEN-LAST:event_historyListMouseClicked
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clearHistoryButton;
     private javax.swing.JButton clearResultsButton;
@@ -279,8 +290,10 @@ public class ValidatorUI extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JTextArea resultBox;
+    private javax.swing.JLabel statusLabel;
     private javax.swing.JButton validateButton;
     // End of variables declaration//GEN-END:variables
 }
